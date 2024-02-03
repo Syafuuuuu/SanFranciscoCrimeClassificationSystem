@@ -81,43 +81,43 @@ for district in train['PdDistrict'].unique():
 #endregion
 
 #region---------| Look at how the distribution is among days of the week |-------
-data = train.groupby('DayOfWeek').count().iloc[:, 0]
-data = data.reindex([
-    'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
-    'Sunday'
-])
+# data = train.groupby('DayOfWeek').count().iloc[:, 0]
+# data = data.reindex([
+#     'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',
+#     'Sunday'
+# ])
 
-plt.figure(figsize=(10, 5))
-with sns.axes_style("whitegrid"):
-    ax = sns.barplot(
-        x=data.index, y=(data.values / data.values.sum()) * 100,
-        orient='v',
-        palette=cm.ScalarMappable(cmap='Reds').to_rgba(data.values))
+# plt.figure(figsize=(10, 5))
+# with sns.axes_style("whitegrid"):
+#     ax = sns.barplot(
+#         x=data.index, y=(data.values / data.values.sum()) * 100,
+#         orient='v',
+#         palette=cm.ScalarMappable(cmap='Reds').to_rgba(data.values))
 
-plt.title('Incidents per Weekday', fontdict={'fontsize': 16})
-plt.xlabel('Weekday')
-plt.ylabel('Incidents (%)')
+# plt.title('Incidents per Weekday', fontdict={'fontsize': 16})
+# plt.xlabel('Weekday')
+# plt.ylabel('Incidents (%)')
 
-plt.show()
+# plt.show()
 #endregion
 
 #region-------| Look at what crime is most frequent |----------
-data = train.groupby('Category').count().iloc[:, 0].sort_values(
-    ascending=False)
-data = data.reindex(np.append(np.delete(data.index, 1), 'OTHER OFFENSES'))
+# data = train.groupby('Category').count().iloc[:, 0].sort_values(
+#     ascending=False)
+# data = data.reindex(np.append(np.delete(data.index, 1), 'OTHER OFFENSES'))
 
-plt.figure(figsize=(10, 10))
-with sns.axes_style("whitegrid"):
-    ax = sns.barplot(
-        x=(data.values / data.values.sum()) * 100,
-        y=data.index,
-        orient='h',
-        palette="Reds_r")
+# plt.figure(figsize=(10, 10))
+# with sns.axes_style("whitegrid"):
+#     ax = sns.barplot(
+#         x=(data.values / data.values.sum()) * 100,
+#         y=data.index,
+#         orient='h',
+#         palette="Reds_r")
 
-plt.title('Incidents per Crime Category', fontdict={'fontsize': 16})
-plt.xlabel('Incidents (%)')
+# plt.title('Incidents per Crime Category', fontdict={'fontsize': 16})
+# plt.xlabel('Incidents (%)')
 
-plt.show()
+# plt.show()
 #endregion
 
 #region -------| transforming Dates |---------
@@ -131,83 +131,83 @@ dateEncoder(test)
 #endregion
 
 #region----------| check distribution by month |------------
-data = train.groupby('Month').count().iloc[:, 0]
+# data = train.groupby('Month').count().iloc[:, 0]
 
-plt.figure(figsize=(10, 5))
-with sns.axes_style("whitegrid"):
-    ax = sns.barplot(
-        x=data.index, y=data.values,
-        orient='v',
-        palette=cm.ScalarMappable(cmap='Blues').to_rgba(data.values))
+# plt.figure(figsize=(10, 5))
+# with sns.axes_style("whitegrid"):
+#     ax = sns.barplot(
+#         x=data.index, y=data.values,
+#         orient='v',
+#         palette=cm.ScalarMappable(cmap='Blues').to_rgba(data.values))
 
-plt.title('Incidents per Month', fontdict={'fontsize': 16})
-plt.xlabel('Month')
-plt.ylabel('Incidents (%)')
+# plt.title('Incidents per Month', fontdict={'fontsize': 16})
+# plt.xlabel('Month')
+# plt.ylabel('Incidents (%)')
 
-plt.show()
+# plt.show()
 #endregion
 
 #region----------| check distribution by hour |------------
-data = train.groupby('Hour').count().iloc[:, 0]
+# data = train.groupby('Hour').count().iloc[:, 0]
 
-plt.figure(figsize=(10, 5))
-with sns.axes_style("whitegrid"):
-    ax = sns.barplot(
-        x=data.index, y=data.values,
-        orient='v',
-        palette=cm.ScalarMappable(cmap='Greens').to_rgba(data.values))
+# plt.figure(figsize=(10, 5))
+# with sns.axes_style("whitegrid"):
+#     ax = sns.barplot(
+#         x=data.index, y=data.values,
+#         orient='v',
+#         palette=cm.ScalarMappable(cmap='Greens').to_rgba(data.values))
 
-plt.title('Incidents per Hour', fontdict={'fontsize': 16})
-plt.xlabel('Hour')
-plt.ylabel('Incidents (%)')
+# plt.title('Incidents per Hour', fontdict={'fontsize': 16})
+# plt.xlabel('Hour')
+# plt.ylabel('Incidents (%)')
 
-plt.show()
+# plt.show()
 #endregion
 
 #----------| Check by the hour but with respect to the category |-----------
-plt.figure(figsize=(15, 10))
-sns.set_style("whitegrid")
+# plt.figure(figsize=(15, 10))
+# sns.set_style("whitegrid")
 
-# Group the data by hour and category and count the occurrences
-hourly_category_counts = train.groupby(['Hour', 'Category']).size().reset_index(name='Count')
+# # Group the data by hour and category and count the occurrences
+# hourly_category_counts = train.groupby(['Hour', 'Category']).size().reset_index(name='Count')
 
-# Plot the lineplot
-ax = sns.lineplot(x='Hour', y='Count', hue='Category', data=hourly_category_counts, palette='viridis')
+# # Plot the lineplot
+# ax = sns.lineplot(x='Hour', y='Count', hue='Category', data=hourly_category_counts, palette='viridis')
 
-# Set labels and title
-plt.title('Incidents per Hour with Respect to Category', fontsize=16)
-plt.xlabel('Hour', fontsize=12)
-plt.ylabel('Incident Count', fontsize=12)
-plt.xticks(rotation=45)
+# # Set labels and title
+# plt.title('Incidents per Hour with Respect to Category', fontsize=16)
+# plt.xlabel('Hour', fontsize=12)
+# plt.ylabel('Incident Count', fontsize=12)
+# plt.xticks(rotation=45)
 
-# Adjust legend
-ax.legend(title='Category', bbox_to_anchor=(1.05, 1), loc='upper left')
+# # Adjust legend
+# ax.legend(title='Category', bbox_to_anchor=(1.05, 1), loc='upper left')
 
-plt.show()
+# plt.show()
 
 
 # Get unique categories
 categories = train['Category'].unique()
 
 # Create a line graph for each category
-plt.figure(figsize=(16, 12))
-for category in categories:
-    sns.set_style("whitegrid")
+# plt.figure(figsize=(16, 12))
+# for category in categories:
+#     sns.set_style("whitegrid")
     
-    # Filter data for the current category
-    category_data = hourly_category_counts[hourly_category_counts['Category'] == category]
+#     # Filter data for the current category
+#     category_data = hourly_category_counts[hourly_category_counts['Category'] == category]
     
-    # Plot the lineplot
-    ax = sns.lineplot(x='Hour', y='Count', data=category_data, color='blue')
+#     # Plot the lineplot
+#     ax = sns.lineplot(x='Hour', y='Count', data=category_data, color='blue')
     
-    # Set labels and title
-    plt.title(f'Incidents per Hour for Category: {category}', fontsize=16)
-    plt.xlabel('Hour', fontsize=12)
-    plt.ylabel('Incident Count', fontsize=12)
-    plt.xticks(rotation=45)
+#     # Set labels and title
+#     plt.title(f'Incidents per Hour for Category: {category}', fontsize=16)
+#     plt.xlabel('Hour', fontsize=12)
+#     plt.ylabel('Incident Count', fontsize=12)
+#     plt.xticks(rotation=45)
     
-    plt.show()
-# plt.show()
+#     # plt.show()
+# # plt.show()
 
 
 
@@ -218,15 +218,8 @@ print("--------------------------------------------")
 print("-------------- After Encoding --------------")
 print("--------------------------------------------")
 
-print(test.head())
-print(train_clean.head())
-
-train_clean_corr = train_clean[['Category','DayOfWeek','PdDistrict','X','Y', 'Month', 'Hour']]
-print(train_clean_corr.corr())
-sns.heatmap(train_clean_corr.corr(), annot=True)
-
 #-------| Encoding Category |---------
-uniqueCat = train_clean['Category'].unique()
+uniqueCat = train['Category'].unique()
 
 cat_dict = {}
 count = 1
@@ -234,7 +227,7 @@ for data in uniqueCat:
     cat_dict[data] = count
     count+=1
 
-train_clean["Category"] = train_clean["Category"].replace(cat_dict)
+train["Category"] = train["Category"].replace(cat_dict)
 
 
 #-------| Encoding Weekdays |---------
@@ -248,28 +241,89 @@ week_dict = {
     "Sunday":7
 }
 
-train_clean["DayOfWeek"] = train_clean["DayOfWeek"].replace(week_dict)
+train["DayOfWeek"] = train["DayOfWeek"].replace(week_dict)
 test["DayOfWeek"] = test["DayOfWeek"].replace(week_dict)
 
 
-#-------| Encoding Weekdays |---------
-district = train_clean["PdDistrict"].unique()
+#-------| Encoding Districts |---------
+district = train["PdDistrict"].unique()
 district_dict = {}
 count = 1
 for data in district:
     district_dict[data] = count
     count+=1 
 
-train_clean["PdDistrict"] = train_clean["PdDistrict"].replace(district_dict)
+train["PdDistrict"] = train["PdDistrict"].replace(district_dict)
 test["PdDistrict"] = test["PdDistrict"].replace(district_dict)
 
 
-
+train_corr = train[['Category','DayOfWeek','PdDistrict','X','Y', 'Month', 'Hour']]
+print(train_corr.corr())
+sns.heatmap(train_corr.corr(), annot=True)
 
 #Calculate the skew
-skew = train_clean_corr.skew()
+skew = train_corr.skew()
 print(skew)
 
 # data_corr_map = sns.heatmap(train_clean_corr.corr(), annot=True)
 plt.show()
+
+
+#-------------| Drop unwated features |-------------
+train = train.drop(['Dates','Descript','Resolution','Address'], axis=1)
+test = test.drop(['Id','Dates','Address'], axis=1)
+
+print(train)
+print(test)
+
+x = train.drop(['PdDistrict'], axis=1)
+y = pd.DataFrame()
+y.loc[:,"PdDistrict"] = train.loc[:,"PdDistrict"]
+
+# x.to_csv("Train_Features.csv")
+# y.to_csv("Train_Target.csv")
+
+#----------{Split Data}-------------
+x_train,x_test, y_train, y_test = train_test_split(x, y, test_size = 0.3, random_state = 100)
+
+# ------------| normalization - feature standard scaling |----------- 
+from sklearn.preprocessing import StandardScaler    
+st_x= StandardScaler()    
+x_train= st_x.fit_transform(x_train)
+x_test = st_x.fit_transform(x_test)
+
+# Reshape y_train and y_test
+y_train = y_train.values.flatten()
+y_test = y_test.values.flatten()
+
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.neural_network import MLPClassifier
+
+# # k-NN: k=3
+# k = 10
+# KNNclassifier = KNeighborsClassifier(n_neighbors=k,metric='minkowski', p=2)
+# KNNclassifier.fit(x_train, y_train)
+# knn_accuracy = KNNclassifier.score(x_test, y_test)
+# print("KNN (k=3) Accuracy:", knn_accuracy)
+
+# #Log Reg
+# LogReg = LogisticRegression(verbose=2)
+# LogReg.fit(x_train,y_train)
+# log_reg_accuracy = LogReg.score(x_test, y_test)
+# print("Logistic Regression Accuracy:", log_reg_accuracy)
+
+#Random Forest
+rfc = RandomForestClassifier(n_estimators = 10, criterion = 'entropy',random_state =7, verbose=10)
+
+rfc.fit(x_train, y_train)
+rfc_acc = rfc.score(x_test, y_test)
+print("RF Acc: ", rfc_acc)
+
+# #MLP Neural Nets
+# mlp = MLPClassifier(solver='adam', activation='relu', alpha=1e-05, tol = 1e-04, hidden_layer_sizes=(50,),random_state=1, max_iter = 1000, verbose=2)
+# mlp.fit(x_train, y_train)
+# mlp_acc = mlp.score(x_test, y_test)
+# print("RF Acc: ", mlp_acc)
 
