@@ -306,64 +306,10 @@ smote = SMOTE(random_state=42)
 # Apply SMOTE to x and y
 x_smote, y_smote = smote.fit_resample(x, y)
 
+# plt.show()
+
 # x.to_csv("Train_Features.csv")
-# y.to_csv("Train_Target.csv")
-
-# def  model_training(x,y):
-#     #----------{Split Data}-------------
-#     x_train,x_test, y_train, y_test = train_test_split(x, y, test_size = 0.3, random_state = 100)
-
-#     # ------------| normalization - feature standard scaling |----------- 
-#     from sklearn.preprocessing import StandardScaler, MinMaxScaler
-#     st_x= MinMaxScaler()    
-#     x_train= st_x.fit_transform(x_train)
-#     x_test = st_x.fit_transform(x_test)
-
-#     # Reshape y_train and y_test
-#     y_train = y_train.values.flatten()
-#     y_test = y_test.values.flatten()
-
-#     from sklearn.neighbors import KNeighborsClassifier
-#     from sklearn.linear_model import LogisticRegression
-#     from sklearn.ensemble import RandomForestClassifier
-#     from sklearn.neural_network import MLPClassifier
-#     from sklearn.naive_bayes import MultinomialNB, BernoulliNB
-
-#     # k-NN: k=3
-#     k = 10
-#     KNNclassifier = KNeighborsClassifier(n_neighbors=k,metric='minkowski', p=2)
-#     KNNclassifier.fit(x_train, y_train)
-#     knn_accuracy = KNNclassifier.score(x_test, y_test)
-
-#     #Log Reg
-#     LogReg = LogisticRegression(verbose=2)
-#     LogReg.fit(x_train,y_train)
-#     log_reg_accuracy = LogReg.score(x_test, y_test)
-
-#     #Random Forest
-#     rfc = RandomForestClassifier(n_estimators = 10, criterion = 'entropy',random_state =7, verbose=10)
-#     rfc.fit(x_train, y_train)
-#     rfc_acc = rfc.score(x_test, y_test)
-
-
-#     #MLP Neural Nets
-#     mlp = MLPClassifier(solver='adam', activation='relu', alpha=1e-05, tol = 1e-04, hidden_layer_sizes=(20,),random_state=1, max_iter = 1000, verbose=2)
-#     mlp.fit(x_train, y_train)
-#     mlp_acc = mlp.score(x_test, y_test)
-
-#     # Multinomial Naive Bayes
-#     MLB = BernoulliNB()
-#     MLB.fit(x_train, y_train)
-#     MLB_acc = MLB.score(x_train, y_train)
-
-#     # Outputs and Scores
-#     print("KNN (k=3) Accuracy:", knn_accuracy)
-#     print("Logistic Regression Accuracy:", log_reg_accuracy)
-#     print("RF Acc: ", rfc_acc)
-#     print("MLP Acc: ", mlp_acc)
-#     print("BLB: ", MLB_acc) 
-#     # print(x.head())
-#     # print(rfc.feature_importances_)
+# y.to_csv("Train_Target.csv")x 
 
 def model_training(x, y):
     # Define models
@@ -413,5 +359,5 @@ def model_training(x, y):
 
 # Call the model_training function
 print("Training started")
-model_training(x_smote, y_smote)
+# model_training(x_smote, y_smote)
 print("Training endeded")
