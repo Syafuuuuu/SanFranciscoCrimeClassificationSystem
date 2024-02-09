@@ -22,7 +22,7 @@ import re
 # from matplotlib import pyplot as plt
 # from pdpbox import pdp, get_dataset, info_plots
 # import shap
-from sklearn.model_selection import train_test_split, KFold
+from sklearn.model_selection import train_test_split, KFold, GridSearchCV
 from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.pipeline import make_pipeline
@@ -31,6 +31,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.naive_bayes import BernoulliNB
+from sklearn.svm import SVC, SVR
+from sklearn.tree import DecisionTreeClassifier
 
 train = pd.read_csv(r'C:\Users\User\Desktop\SEM 5\Pattern Rec\Project\train.csv')
 test = pd.read_csv(r'C:\Users\User\Desktop\SEM 5\Pattern Rec\Project\test.csv')
@@ -311,15 +313,61 @@ x_smote, y_smote = smote.fit_resample(x, y)
 # x.to_csv("Train_Features.csv")
 # y.to_csv("Train_Target.csv")x 
 
-def model_training(x, y):
+def hyperparameter(x, y):
+    # Define models and their respective hyperparameters for grid search
+    models = {
+        'Random Forest': (RandomForestClassifier(), {
+            'n_estimators': [10, 50, 100],
+            'max_depth': [None, 10, 20],
+            'min_samples_split': [2, 5, 10],
+            'min_samples_leaf': [1, 2, 4],
+            'bootstrap': [True, False]
+        }),
+        'Decision Tree': (DecisionTreeClassifier(), {
+            'criterion': ['gini', 'entropy'],
+            'max_depth': [None, 10, 20, 50],
+            'min_samples_split': [2, 5, 10],
+            'min_samples_leaf': [1, 2, 4]
+        })
+    }
+
+    # Initialize a StandardScaler
+    scaler = MinMaxScaler()
+
+ # Initialize KFold
+    kf = KFold(n_splits=5, shuffle=True, random_state=42)
+
+    for name, (model, param_grid) in models.items():
+        # Create a pipeline with scaling and the model
+        pipeline = make_pipeline(scaler, model)
+        
+        # Perform grid search with KFold cross-validation
+        grid_search = GridSearchCV(pipeline, param_grid, cv=kf, scoring='accuracy', verbose=1)
+        
+        # Fit grid search to data
+        grid_search.fit(x, y.values.ravel())
+        
+        # Access the best hyperparameters and the best model
+        best_params = grid_search.best_params_
+        best_model = grid_search.best_estimator_
+        
+        # Print the best hyperparameters
+        print(f'Best hyperparameters for {name}: {best_params}')
+        
+        # Print mean cross-validated score of the best_estimator
+        print(f'Mean cross-validated score for {name}: {grid_search.best_score_}')
+
+def final_model_training(x, y):
     # Define models
     models = {
-        'KNN': KNeighborsClassifier(n_neighbors=10),
-        'Logistic Regression': LogisticRegression(verbose=1),
+        # 'KNN': KNeighborsClassifier(n_neighbors=10),
+        # 'Logistic Regression': LogisticRegression(verbose=1),
         'Random Forest': RandomForestClassifier(n_estimators=10, criterion='entropy', random_state=7, verbose=1),
-        'MLP': MLPClassifier(solver='adam', activation='relu', alpha=1e-05, tol=1e-04, hidden_layer_sizes=(20,), random_state=1, max_iter=1000, verbose=True),
-        'Bernoulli NB': BernoulliNB()
-    }
+        # 'MLP': MLPClassifier(solver='adam', activation='relu', alpha=1e-05, tol=1e-04, hidden_layer_sizes=(20,), random_state=1, max_iter=1000, verbose=True),
+        # 'Bernoulli NB': BernoulliNB(),
+        # 'SVC' : SVC(verbose=1),
+        'Decision Tree' : DecisionTreeClassifier()
+        }
 
     # Initialize a StandardScaler
     scaler = MinMaxScaler()
@@ -359,5 +407,6 @@ def model_training(x, y):
 
 # Call the model_training function
 print("Training started")
-# model_training(x_smote, y_smote)
+hyperparameter(x_smote, y_smote)
+# final_model_training(x_smote, y_smote)
 print("Training endeded")
