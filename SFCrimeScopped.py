@@ -308,10 +308,47 @@ smote = SMOTE(random_state=42)
 # Apply SMOTE to x and y
 x_smote, y_smote = smote.fit_resample(x, y)
 
+# Convert y to a 1D array using ravel()
+y_smote = y_smote.values.ravel()
+
 # plt.show()
 
 # x.to_csv("Train_Features.csv")
-# y.to_csv("Train_Target.csv")x 
+# y.to_csv("Train_Target.csv")
+
+def hyper_param(x,y):
+
+    # Parameter grid for RandomForestClassifier
+    RFC_grid = {
+        'n_estimators': [50, 100, 200],
+        'max_depth': [None, 10, 20],
+        'min_samples_split': [2, 5, 10],
+        'min_samples_leaf': [1, 2, 4],
+        'max_features': ['auto', 'sqrt', 'log2']
+    }
+
+    # Parameter grid for DecisionTreeClassifier
+    DTC_grid = {
+        'criterion': ['gini', 'entropy'],
+        'splitter': ['best', 'random'],
+        'max_depth': [None, 10, 20],
+        'min_samples_split': [2, 5, 10],
+        'min_samples_leaf': [1, 2, 4],
+        'max_features': ['auto', 'sqrt', 'log2']
+    }
+    
+    RFC_grid_model = GridSearchCV(RandomForestClassifier(), RFC_grid, refit=True, verbose=3)
+    DTC_grid_model = GridSearchCV(DecisionTreeClassifier(), DTC_grid, refit=True, verbose=3)
+    
+    RFC_grid_model.fit(x, y)
+    DTC_grid_model.fit(x, y)
+    
+    # Get the best parameters 
+    RFC_best_params = RFC_grid_model.best_params_ 
+    DTC_best_params = DTC_grid_model.best_params_ 
+    print("\n----- Best Hyperparameters -----")
+    print("RFC Best Params: ", RFC_best_params)
+    print("DTC Best Params: ", DTC_best_params)
 
 
 def final_model_training(x, y):
@@ -338,7 +375,7 @@ def final_model_training(x, y):
         pipeline = make_pipeline(scaler, model)
         
         # Perform k-fold cross-validation
-        for train_index, test_index in KFold(n_splits=5, shuffle=True, random_state=42).split(x):
+        for train_index, test_index in KFold(n_splits=20, shuffle=True, random_state=42).split(x):
             x_train, x_test = x.iloc[train_index], x.iloc[test_index]
             y_train, y_test = y.iloc[train_index], y.iloc[test_index]
             
@@ -364,5 +401,6 @@ def final_model_training(x, y):
 
 # Call the model_training function
 print("Training started")
+hyper_param(x_smote, y_smote)
 # final_model_training(x_smote, y_smote)
 print("Training endeded")
