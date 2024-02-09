@@ -6,7 +6,6 @@ import plotly.express as px
 import numpy as np
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import train_test_split
 import seaborn as sns
 from matplotlib import cm
 import urllib.request
@@ -23,6 +22,15 @@ import re
 # from matplotlib import pyplot as plt
 # from pdpbox import pdp, get_dataset, info_plots
 # import shap
+from sklearn.model_selection import train_test_split, KFold
+from sklearn.model_selection import cross_val_score
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.pipeline import make_pipeline
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.neural_network import MLPClassifier
+from sklearn.naive_bayes import BernoulliNB
 
 train = pd.read_csv(r'C:\Users\User\Desktop\SEM 5\Pattern Rec\Project\train.csv')
 test = pd.read_csv(r'C:\Users\User\Desktop\SEM 5\Pattern Rec\Project\test.csv')
@@ -289,63 +297,121 @@ x = train.drop([target], axis=1)
 y = pd.DataFrame()
 y.loc[:,target] = train.loc[:,target]
 
+# Import SMOTE
+from imblearn.over_sampling import SMOTE
+
+# Initialize SMOTE
+smote = SMOTE(random_state=42)
+
+# Apply SMOTE to x and y
+x_smote, y_smote = smote.fit_resample(x, y)
+
 # x.to_csv("Train_Features.csv")
 # y.to_csv("Train_Target.csv")
 
-def  model_training(x,y):
-    #----------{Split Data}-------------
-    x_train,x_test, y_train, y_test = train_test_split(x, y, test_size = 0.3, random_state = 100)
+# def  model_training(x,y):
+#     #----------{Split Data}-------------
+#     x_train,x_test, y_train, y_test = train_test_split(x, y, test_size = 0.3, random_state = 100)
 
-    # ------------| normalization - feature standard scaling |----------- 
-    from sklearn.preprocessing import StandardScaler, MinMaxScaler
-    st_x= MinMaxScaler()    
-    x_train= st_x.fit_transform(x_train)
-    x_test = st_x.fit_transform(x_test)
+#     # ------------| normalization - feature standard scaling |----------- 
+#     from sklearn.preprocessing import StandardScaler, MinMaxScaler
+#     st_x= MinMaxScaler()    
+#     x_train= st_x.fit_transform(x_train)
+#     x_test = st_x.fit_transform(x_test)
 
-    # Reshape y_train and y_test
-    y_train = y_train.values.flatten()
-    y_test = y_test.values.flatten()
+#     # Reshape y_train and y_test
+#     y_train = y_train.values.flatten()
+#     y_test = y_test.values.flatten()
 
-    from sklearn.neighbors import KNeighborsClassifier
-    from sklearn.linear_model import LogisticRegression
-    from sklearn.ensemble import RandomForestClassifier
-    from sklearn.neural_network import MLPClassifier
-    from sklearn.naive_bayes import MultinomialNB, BernoulliNB
+#     from sklearn.neighbors import KNeighborsClassifier
+#     from sklearn.linear_model import LogisticRegression
+#     from sklearn.ensemble import RandomForestClassifier
+#     from sklearn.neural_network import MLPClassifier
+#     from sklearn.naive_bayes import MultinomialNB, BernoulliNB
 
-    # k-NN: k=3
-    k = 10
-    KNNclassifier = KNeighborsClassifier(n_neighbors=k,metric='minkowski', p=2)
-    KNNclassifier.fit(x_train, y_train)
-    knn_accuracy = KNNclassifier.score(x_test, y_test)
+#     # k-NN: k=3
+#     k = 10
+#     KNNclassifier = KNeighborsClassifier(n_neighbors=k,metric='minkowski', p=2)
+#     KNNclassifier.fit(x_train, y_train)
+#     knn_accuracy = KNNclassifier.score(x_test, y_test)
 
-    #Log Reg
-    LogReg = LogisticRegression(verbose=2)
-    LogReg.fit(x_train,y_train)
-    log_reg_accuracy = LogReg.score(x_test, y_test)
+#     #Log Reg
+#     LogReg = LogisticRegression(verbose=2)
+#     LogReg.fit(x_train,y_train)
+#     log_reg_accuracy = LogReg.score(x_test, y_test)
 
-    #Random Forest
-    rfc = RandomForestClassifier(n_estimators = 10, criterion = 'entropy',random_state =7, verbose=10)
-    rfc.fit(x_train, y_train)
-    rfc_acc = rfc.score(x_test, y_test)
+#     #Random Forest
+#     rfc = RandomForestClassifier(n_estimators = 10, criterion = 'entropy',random_state =7, verbose=10)
+#     rfc.fit(x_train, y_train)
+#     rfc_acc = rfc.score(x_test, y_test)
 
 
-    #MLP Neural Nets
-    mlp = MLPClassifier(solver='adam', activation='relu', alpha=1e-05, tol = 1e-04, hidden_layer_sizes=(20,),random_state=1, max_iter = 1000, verbose=2)
-    mlp.fit(x_train, y_train)
-    mlp_acc = mlp.score(x_test, y_test)
+#     #MLP Neural Nets
+#     mlp = MLPClassifier(solver='adam', activation='relu', alpha=1e-05, tol = 1e-04, hidden_layer_sizes=(20,),random_state=1, max_iter = 1000, verbose=2)
+#     mlp.fit(x_train, y_train)
+#     mlp_acc = mlp.score(x_test, y_test)
 
-    # Multinomial Naive Bayes
-    MLB = BernoulliNB()
-    MLB.fit(x_train, y_train)
-    MLB_acc = MLB.score(x_train, y_train)
+#     # Multinomial Naive Bayes
+#     MLB = BernoulliNB()
+#     MLB.fit(x_train, y_train)
+#     MLB_acc = MLB.score(x_train, y_train)
 
-    # Outputs and Scores
-    print("KNN (k=3) Accuracy:", knn_accuracy)
-    print("Logistic Regression Accuracy:", log_reg_accuracy)
-    print("RF Acc: ", rfc_acc)
-    print("MLP Acc: ", mlp_acc)
-    print("BLB: ", MLB_acc) 
-    # print(x.head())
-    # print(rfc.feature_importances_)
+#     # Outputs and Scores
+#     print("KNN (k=3) Accuracy:", knn_accuracy)
+#     print("Logistic Regression Accuracy:", log_reg_accuracy)
+#     print("RF Acc: ", rfc_acc)
+#     print("MLP Acc: ", mlp_acc)
+#     print("BLB: ", MLB_acc) 
+#     # print(x.head())
+#     # print(rfc.feature_importances_)
 
-model_training(x,y)
+def model_training(x, y):
+    # Define models
+    models = {
+        'KNN': KNeighborsClassifier(n_neighbors=10),
+        'Logistic Regression': LogisticRegression(verbose=1),
+        'Random Forest': RandomForestClassifier(n_estimators=10, criterion='entropy', random_state=7, verbose=1),
+        'MLP': MLPClassifier(solver='adam', activation='relu', alpha=1e-05, tol=1e-04, hidden_layer_sizes=(20,), random_state=1, max_iter=1000, verbose=True),
+        'Bernoulli NB': BernoulliNB()
+    }
+
+    # Initialize a StandardScaler
+    scaler = MinMaxScaler()
+
+    for name, model in models.items():
+        # Initialize lists to store training and testing accuracies
+        train_accuracies = []
+        test_accuracies = []
+        
+        # Create a pipeline with scaling and the model
+        pipeline = make_pipeline(scaler, model)
+        
+        # Perform k-fold cross-validation
+        for train_index, test_index in KFold(n_splits=5, shuffle=True, random_state=42).split(x):
+            x_train, x_test = x.iloc[train_index], x.iloc[test_index]
+            y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+            
+            # Fit the model
+            pipeline.fit(x_train, y_train.values.ravel())
+            
+            # Compute training accuracy
+            train_accuracy = pipeline.score(x_train, y_train)
+            train_accuracies.append(train_accuracy)
+            
+            # Compute testing accuracy
+            test_accuracy = pipeline.score(x_test, y_test)
+            test_accuracies.append(test_accuracy)
+        
+        # Calculate mean training and testing accuracies
+        mean_train_accuracy = np.mean(train_accuracies)
+        mean_test_accuracy = np.mean(test_accuracies)
+        
+        # Print the mean training and testing accuracies
+        print(f'{name} - Mean Training Accuracy: {mean_train_accuracy}, Mean Testing Accuracy: {mean_test_accuracy}')
+
+
+
+# Call the model_training function
+print("Training started")
+model_training(x_smote, y_smote)
+print("Training endeded")
