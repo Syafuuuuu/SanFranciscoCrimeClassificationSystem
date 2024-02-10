@@ -30,9 +30,10 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neural_network import MLPClassifier
-from sklearn.naive_bayes import BernoulliNB
+from sklearn.naive_bayes import BernoulliNB, MultinomialNB
 from sklearn.svm import SVC, SVR
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import classification_report, precision_score, recall_score
 
 train = pd.read_csv(r'C:\Users\User\Desktop\SEM 5\Pattern Rec\Project\train.csv')
 test = pd.read_csv(r'C:\Users\User\Desktop\SEM 5\Pattern Rec\Project\test.csv')
@@ -139,6 +140,7 @@ plt.xlabel('Incidents (%)')
 def dateEncoder(x):
     x['Dates'] = pd.to_datetime(x['Dates'], errors='coerce')
     x['Month'] = x.Dates.dt.month
+    x['Day'] = x.Dates.dt.day
     x['Hour'] = x.Dates.dt.hour
     x['Minute'] = x.Dates.dt.minute
 
@@ -308,47 +310,13 @@ smote = SMOTE(random_state=42)
 # Apply SMOTE to x and y
 x_smote, y_smote = smote.fit_resample(x, y)
 
-# Convert y to a 1D array using ravel()
-y_smote = y_smote.values.ravel()
+print("Smoted---------Smoted")
+print(x_smote.head())
 
 # plt.show()
 
 # x.to_csv("Train_Features.csv")
-# y.to_csv("Train_Target.csv")
-
-def hyper_param(x,y):
-
-    # Parameter grid for RandomForestClassifier
-    RFC_grid = {
-        'n_estimators': [50, 100, 200],
-        'max_depth': [None, 10, 20],
-        'min_samples_split': [2, 5, 10],
-        'min_samples_leaf': [1, 2, 4],
-        'max_features': ['auto', 'sqrt', 'log2']
-    }
-
-    # Parameter grid for DecisionTreeClassifier
-    DTC_grid = {
-        'criterion': ['gini', 'entropy'],
-        'splitter': ['best', 'random'],
-        'max_depth': [None, 10, 20],
-        'min_samples_split': [2, 5, 10],
-        'min_samples_leaf': [1, 2, 4],
-        'max_features': ['auto', 'sqrt', 'log2']
-    }
-    
-    RFC_grid_model = GridSearchCV(RandomForestClassifier(), RFC_grid, refit=True, verbose=3)
-    DTC_grid_model = GridSearchCV(DecisionTreeClassifier(), DTC_grid, refit=True, verbose=3)
-    
-    RFC_grid_model.fit(x, y)
-    DTC_grid_model.fit(x, y)
-    
-    # Get the best parameters 
-    RFC_best_params = RFC_grid_model.best_params_ 
-    DTC_best_params = DTC_grid_model.best_params_ 
-    print("\n----- Best Hyperparameters -----")
-    print("RFC Best Params: ", RFC_best_params)
-    print("DTC Best Params: ", DTC_best_params)
+# y.to_csv("Train_Target.csv")x 
 
 
 def final_model_training(x, y):
@@ -356,11 +324,11 @@ def final_model_training(x, y):
     models = {
         # 'KNN': KNeighborsClassifier(n_neighbors=10),
         # 'Logistic Regression': LogisticRegression(verbose=1),
-        'Random Forest': RandomForestClassifier(n_estimators=10, criterion='entropy', random_state=7, verbose=1),
+        # 'Random Forest': RandomForestClassifier(n_estimators=200, max_depth=None, min_samples_split=2, min_samples_leaf=1, max_features='sqrt', random_state=7, verbose=1),
         # 'MLP': MLPClassifier(solver='adam', activation='relu', alpha=1e-05, tol=1e-04, hidden_layer_sizes=(20,), random_state=1, max_iter=1000, verbose=True),
         # 'Bernoulli NB': BernoulliNB(),
         # 'SVC' : SVC(verbose=1),
-        'Decision Tree' : DecisionTreeClassifier()
+        'Decision Tree' : DecisionTreeClassifier(criterion='entropy', max_depth=None, max_features='sqrt', min_samples_leaf=1, min_samples_split=2, splitter='random')
         }
 
     # Initialize a StandardScaler
@@ -370,17 +338,25 @@ def final_model_training(x, y):
         # Initialize lists to store training and testing accuracies
         train_accuracies = []
         test_accuracies = []
-        
+        train_precisions = []
+        test_precisions = []
+        train_recalls = []
+        test_recalls = []
+
         # Create a pipeline with scaling and the model
         pipeline = make_pipeline(scaler, model)
-        
+
         # Perform k-fold cross-validation
-        for train_index, test_index in KFold(n_splits=20, shuffle=True, random_state=42).split(x):
+        for train_index, test_index in KFold(n_splits=5, shuffle=True, random_state=42).split(x):
             x_train, x_test = x.iloc[train_index], x.iloc[test_index]
             y_train, y_test = y.iloc[train_index], y.iloc[test_index]
-            
+
             # Fit the model
             pipeline.fit(x_train, y_train.values.ravel())
+
+            # Predictions
+            train_predictions = pipeline.predict(x_train)
+            test_predictions = pipeline.predict(x_test)
             
             # Compute training accuracy
             train_accuracy = pipeline.score(x_train, y_train)
@@ -389,18 +365,80 @@ def final_model_training(x, y):
             # Compute testing accuracy
             test_accuracy = pipeline.score(x_test, y_test)
             test_accuracies.append(test_accuracy)
-        
+
+            # Compute precision and recall scores
+            train_precision = precision_score(y_train, train_predictions, average='macro')
+            test_precision = precision_score(y_test, test_predictions, average='macro')
+            train_recall = recall_score(y_train, train_predictions, average='macro')
+            test_recall = recall_score(y_test, test_predictions, average='macro')
+
+            train_precisions.append(train_precision)
+            test_precisions.append(test_precision)
+            train_recalls.append(train_recall)
+            test_recalls.append(test_recall)
+
         # Calculate mean training and testing accuracies
         mean_train_accuracy = np.mean(train_accuracies)
         mean_test_accuracy = np.mean(test_accuracies)
         
+        # Calculate mean training and testing precision and recall
+        mean_train_precision = np.mean(train_precisions)
+        mean_test_precision = np.mean(test_precisions)
+        mean_train_recall = np.mean(train_recalls)
+        mean_test_recall = np.mean(test_recalls)
+
         # Print the mean training and testing accuracies
         print(f'{name} - Mean Training Accuracy: {mean_train_accuracy}, Mean Testing Accuracy: {mean_test_accuracy}')
+        
+        # Print the mean training and testing precision and recall
+        print(f'{name} - Mean Training Precision: {mean_train_precision}, Mean Testing Precision: {mean_test_precision}')
+        print(f'{name} - Mean Training Recall: {mean_train_recall}, Mean Testing Recall: {mean_test_recall}')
 
-
+def modelTraining(x,y):
+    
+    #Models
+    KNN = KNeighborsClassifier(n_neighbors=10)
+    LogReg = LogisticRegression(verbose=1)
+    MLP = MLPClassifier(solver='adam', activation='relu', alpha=1e-05, tol=1e-04, hidden_layer_sizes=(20,), random_state=1, max_iter=1000, verbose=True)
+    BNB = BernoulliNB()
+    MNB = MultinomialNB()
+    SuppVec = SVC(verbose=1)
+    DT = DecisionTreeClassifier(criterion='entropy', max_depth=None, max_features='sqrt', min_samples_leaf=1, min_samples_split=2, splitter='random')
+    RF = RandomForestClassifier(n_estimators=200, max_depth=None, min_samples_split=2, min_samples_leaf=1, max_features='sqrt', random_state=7, verbose=1)
+    
+    scores = [] 
+    train_scores = []
+    kf = KFold(n_splits=5, random_state=42, shuffle=True)
+    
+    model = KNN
+    
+    # for train_index, test_index in kf.split(x):
+        
+    #     model = RF
+        
+    #     # print("Train Index: ", train_index, "\n")
+    #     # print("Test Index: ", test_index)
+    
+    #     X_train, X_test, y_train, y_test = x.iloc[train_index], x.iloc[test_index], y.iloc[train_index], y.iloc[test_index]
+        
+    #     y_train = y_train.values.ravel()
+    #     y_test = y_test.values.ravel()
+        
+    #     model.fit(X_train, y_train)
+        
+    #     y_pred = model.predict(X_test)
+        
+    #     train_scores.append(model.score(X_train, y_train))
+    #     scores.append(model.score(X_test, y_test))
+    #     print(classification_report(y_test, y_pred))
+        
+    # print(np.mean(scores))
+    # print(train_scores)
+    print(cross_val_score(model, x, y.values.ravel(), cv=10, verbose=1))
+        
 
 # Call the model_training function
 print("Training started")
-hyper_param(x_smote, y_smote)
 # final_model_training(x_smote, y_smote)
+modelTraining(x_smote, y_smote)
 print("Training endeded")
