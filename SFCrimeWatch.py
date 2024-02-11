@@ -12,14 +12,12 @@ st.write("Sand Fransisco Crime Watch")
 date = st.sidebar.date_input(label="Date:")
 time = st.sidebar.time_input(label="Time:")
 
-street = st.sidebar.text_input("Street", "75 Bay Street")
-city = st.sidebar.text_input("City", "Toronto")
-province = st.sidebar.text_input("Province", "Ontario")
-country = st.sidebar.text_input("Country", "Canada")
+addressRow1 = st.sidebar.text_input(label="AddressR1")
+addressRow2 = st.sidebar.text_input(label="AddressR2")
 
 geolocator = Nominatim(user_agent="GTA Lookup")
 geocode = RateLimiter(geolocator.geocode, min_delay_seconds=1)
-location = geolocator.geocode(street+", "+city+", "+province+", "+country)
+location = geolocator.geocode(addressRow1+" "+addressRow2 + " San Francisco, California")
 
 lat = location.latitude
 lon = location.longitude
@@ -27,3 +25,4 @@ lon = location.longitude
 map_data = pd.DataFrame({'lat': [lat], 'lon': [lon]})
 
 st.map(map_data) 
+st.write("Longitude: " + str(lon) + " | Latitude: " + str(lat))
