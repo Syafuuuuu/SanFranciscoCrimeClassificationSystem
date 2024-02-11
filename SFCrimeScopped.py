@@ -34,6 +34,8 @@ from sklearn.naive_bayes import BernoulliNB, MultinomialNB
 from sklearn.svm import SVC, SVR
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import classification_report, precision_score, recall_score
+import lightgbm as lgb
+from xgboost import XGBClassifier
 
 train = pd.read_csv(r'C:\Users\User\Desktop\SEM 5\Pattern Rec\Project\train.csv')
 test = pd.read_csv(r'C:\Users\User\Desktop\SEM 5\Pattern Rec\Project\test.csv')
@@ -242,7 +244,7 @@ print("--------------------------------------------")
 uniqueCat = train['Category'].unique()
 
 cat_dict = {}
-count = 1
+count = 0
 for data in uniqueCat:
     cat_dict[data] = count
     count+=1
@@ -405,12 +407,14 @@ def modelTraining(x,y):
     SuppVec = SVC(verbose=1)
     DT = DecisionTreeClassifier(criterion='entropy', max_depth=None, max_features='sqrt', min_samples_leaf=1, min_samples_split=2, splitter='random')
     RF = RandomForestClassifier(n_estimators=200, max_depth=None, min_samples_split=2, min_samples_leaf=1, max_features='sqrt', random_state=7, verbose=1)
+    clf = lgb.LGBMClassifier()
+    kf = KFold(n_splits=5, random_state=42, shuffle=True)
+    xgb = XGBClassifier()
     
     scores = [] 
     train_scores = []
-    kf = KFold(n_splits=5, random_state=42, shuffle=True)
     
-    model = KNN
+    model = RF
     
     # for train_index, test_index in kf.split(x):
         
@@ -434,6 +438,7 @@ def modelTraining(x,y):
         
     # print(np.mean(scores))
     # print(train_scores)
+    
     print(cross_val_score(model, x, y.values.ravel(), cv=10, verbose=1))
         
 
