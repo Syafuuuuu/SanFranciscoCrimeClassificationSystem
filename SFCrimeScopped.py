@@ -37,6 +37,8 @@ from sklearn.metrics import classification_report, precision_score, recall_score
 import lightgbm as lgb
 from xgboost import XGBClassifier
 
+import pickle
+
 train = pd.read_csv(r'C:\Users\User\Desktop\SEM 5\Pattern Rec\Project\train.csv')
 test = pd.read_csv(r'C:\Users\User\Desktop\SEM 5\Pattern Rec\Project\test.csv')
 
@@ -248,7 +250,7 @@ count = 0
 for data in uniqueCat:
     cat_dict[data] = count
     count+=1
-
+print(cat_dict)
 train["Category"] = train["Category"].replace(cat_dict)
 
 
@@ -270,11 +272,14 @@ test["DayOfWeek"] = test["DayOfWeek"].replace(week_dict)
 #-------| Encoding Districts |---------
 district = train["PdDistrict"].unique()
 district_dict = {}
-count = 1
+count = 0
+print("----------CATEGORY ORDER-----------")
 for data in district:
+    print(data)
+    print("is ", count)
     district_dict[data] = count
     count+=1 
-
+print("----------CATEGORY ORDER-----------")
 train["PdDistrict"] = train["PdDistrict"].replace(district_dict)
 test["PdDistrict"] = test["PdDistrict"].replace(district_dict)
 
@@ -318,7 +323,7 @@ print(x_smote.head())
 # plt.show()
 
 # x.to_csv("Train_Features.csv")
-# y.to_csv("Train_Target.csv")x 
+# y.to_csv("Train_Target.csv")
 
 
 def final_model_training(x, y):
@@ -398,6 +403,15 @@ def final_model_training(x, y):
 
 def modelTraining(x,y):
     
+    # Initialize a StandardScaler
+    scaler = MinMaxScaler()
+    
+    #Scaling X
+    print("Before scaled", x)
+    x = scaler.fit_transform(x)
+    x = pd.DataFrame(x, columns=['DayOfWeek', 'pdDistrict', 'X', 'Y', 'Month', 'Day', 'Hour', 'Minute'])
+    print("After scaled", x)
+    
     #Models
     KNN = KNeighborsClassifier(n_neighbors=10)
     LogReg = LogisticRegression(verbose=1)
@@ -413,37 +427,124 @@ def modelTraining(x,y):
     
     scores = [] 
     train_scores = []
+    bestModel = None
+    bestScore = 0
+    bestTrainScore = 0
     
     model = RF
     
-    # for train_index, test_index in kf.split(x):
+    for train_index, test_index in kf.split(x):
         
-    #     model = RF
+        model = RF
         
-    #     # print("Train Index: ", train_index, "\n")
-    #     # print("Test Index: ", test_index)
+        # print("Train Index: ", train_index, "\n")
+        # print("Test Index: ", test_index)
     
-    #     X_train, X_test, y_train, y_test = x.iloc[train_index], x.iloc[test_index], y.iloc[train_index], y.iloc[test_index]
+        X_train, X_test, y_train, y_test = x.iloc[train_index], x.iloc[test_index], y.iloc[train_index], y.iloc[test_index]
         
-    #     y_train = y_train.values.ravel()
-    #     y_test = y_test.values.ravel()
+        y_train = y_train.values.ravel()
+        y_test = y_test.values.ravel()
         
-    #     model.fit(X_train, y_train)
+        model.fit(X_train, y_train)
         
-    #     y_pred = model.predict(X_test)
+        y_pred = model.predict(X_test)
         
-    #     train_scores.append(model.score(X_train, y_train))
-    #     scores.append(model.score(X_test, y_test))
-    #     print(classification_report(y_test, y_pred))
+        training = model.score(X_train, y_train)
+        testing = model.score(X_test, y_test)
+        
+        train_scores.append(training)
+        scores.append(testing)
+        print(classification_report(y_test, y_pred))
+        
+        if(testing>bestScore):
+            bestScore = testing
+            bestTrainScore = training
+            bestModel = model
+            print("New Best Model!")
+    
+    print("Best Training Score: ", bestTrainScore)
+    print("Best Testing Score: ", bestScore)
+    print("Saving the model!")
+    filename = 'finalized_model.sav'
+    pickle.dump(bestModel, open(filename, 'wb'))
+            
+        
         
     # print(np.mean(scores))
     # print(train_scores)
     
-    print(cross_val_score(model, x, y.values.ravel(), cv=10, verbose=1))
+    # print(cross_val_score(model, x, y.values.ravel(), cv=10, verbose=1))
         
+def overFit(x,y):
+        
+    # Initialize a StandardScaler
+    scaler = MinMaxScaler()
+    
+    #Scaling X
+    print("Before scaled", x)
+    x = scaler.fit_transform(x)
+    x = pd.DataFrame(x, columns=['DayOfWeek', 'pdDistrict', 'X', 'Y', 'Month', 'Day', 'Hour', 'Minute'])
+    print("After scaled", x)
+    
+    #Models
+    KNN = KNeighborsClassifier(n_neighbors=10)
+    LogReg = LogisticRegression(verbose=1)
+    MLP = MLPClassifier(solver='adam', activation='relu', alpha=1e-05, tol=1e-04, hidden_layer_sizes=(20,), random_state=1, max_iter=1000, verbose=True)
+    BNB = BernoulliNB()
+    MNB = MultinomialNB()
+    SuppVec = SVC(verbose=1)
+    DT = DecisionTreeClassifier(criterion='entropy', max_depth=None, max_features='sqrt', min_samples_leaf=1, min_samples_split=2, splitter='random')
+    RF = RandomForestClassifier(n_estimators=200, max_depth=None, min_samples_split=2, min_samples_leaf=1, max_features='sqrt', random_state=7, verbose=1)
+    clf = lgb.LGBMClassifier()
+    kf = KFold(n_splits=5, random_state=42, shuffle=True)
+    xgb = XGBClassifier()
+    
+    scores = [] 
+    train_scores = []
+    bestModel = None
+    bestScore = 0
+    bestTrainScore = 0
+    
+    model = DT
+    
+    testSizeArray = [10, 20, 30, 40, 50, 60, 70, 80, 90]
+    
+    for testSize in testSizeArray:
+        X_train, X_test, y_train, y_test = train_test_split(x, y, random_state=104, test_size=testSize, shuffle=True)
+    
+        model = RF
+        y_train = y_train.values.ravel()
+        y_test = y_test.values.ravel()
+        
+        model.fit(X_train, y_train)
+        
+        y_pred = model.predict(X_test)
+        
+        training = model.score(X_train, y_train)
+        testing = model.score(X_test, y_test)
+        
+        train_scores.append(training)
+        scores.append(testing)
+        print(classification_report(y_test, y_pred))
+        
+         
+        if(testing>bestScore):
+            bestScore = testing
+            bestTrainScore = training
+            # bestModel = model
+            print("New Best Model!")
+    
+    print("Best Training Score: ", bestTrainScore)
+    print("Best Testing Score: ", bestScore)
+    # print("Saving the model!")
+    # filename = 'finalized_model.sav'
+    # pickle.dump(bestModel, open(filename, 'wb'))
+
+
 
 # Call the model_training function
 print("Training started")
 # final_model_training(x_smote, y_smote)
 modelTraining(x_smote, y_smote)
+overfit(x_smote, y_smote)
 print("Training endeded")
