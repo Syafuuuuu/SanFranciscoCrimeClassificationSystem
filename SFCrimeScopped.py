@@ -431,8 +431,6 @@ def modelTraining(x,y):
     bestScore = 0
     bestTrainScore = 0
     
-    model = RF
-    
     for train_index, test_index in kf.split(x):
         
         model = RF
@@ -505,9 +503,8 @@ def overFit(x,y):
     bestScore = 0
     bestTrainScore = 0
     
-    model = DT
     
-    testSizeArray = [10, 20, 30, 40, 50, 60, 70, 80, 90]
+    testSizeArray = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     
     for testSize in testSizeArray:
         X_train, X_test, y_train, y_test = train_test_split(x, y, random_state=104, test_size=testSize, shuffle=True)
@@ -546,5 +543,5 @@ def overFit(x,y):
 print("Training started")
 # final_model_training(x_smote, y_smote)
 modelTraining(x_smote, y_smote)
-overFit(x_smote, y_smote)
+# overFit(x_smote, y_smote)
 print("Training endeded")
