@@ -546,5 +546,5 @@ def overFit(x,y):
 print("Training started")
 # final_model_training(x_smote, y_smote)
 modelTraining(x_smote, y_smote)
-overfit(x_smote, y_smote)
+overFit(x_smote, y_smote)
 print("Training endeded")
