@@ -11,7 +11,7 @@ import pickle
 from geopy.geocoders import Nominatim
 from geopy.extra.rate_limiter import RateLimiter
 
-st.title("Sand Fransisco Crime Watch")
+st.title("San Fransisco Crime Watch")
 
 st.sidebar.title("San Fransisco Crime Watch")
 date = st.sidebar.date_input(label="Date:")
@@ -122,8 +122,11 @@ def TimeFrame(input):
         
     return daylight
 
-def crimeType(prediction, input):    
-    if(prediction=="0"): # Larceny/Theft
+def feedback(prediction, input):    
+    print(prediction)
+    print(input)
+    
+    if(prediction==0): # Larceny/Theft
         crime = "Larceny/Theft"
         
         if(input[6]>=0 and input[6]<4): #Midnight
@@ -168,10 +171,10 @@ def crimeType(prediction, input):
             PoliceMsg = "Increase patrols"
             CivMsg = "Highly recommend to stay indoors or walk in a group"
                 
-    elif(prediction=="1"): # Vehicle Theft
+    elif(prediction==1): # Vehicle Theft
         crime = "Vehicle Theft"
         
-        if(input[6]>=0 and input[6]<4): #Midnight
+        if(input[6]>=0 and input[6]<4):  #Midnight
             daylight = "Midnight"
             
             #---|Custom Rule Message|---
@@ -213,145 +216,149 @@ def crimeType(prediction, input):
             PoliceMsg = "High level threat. Patrol and standby near decoy cars."
             CivMsg = "Time frame of high probability of car theft. Lock your cars and ensure the handbrake is up and windows are all the way up."
                     
-    elif(prediction=="2"): # Non-Criminal
+    elif(prediction==2): # Non-Criminal
         crime = "Non-Criminal"
         
         if(input[6]>=0 and input[6]<4): #Midnight
             daylight = "Midnight"
             
             #---|Custom Rule Message|---
-            PoliceMsg = ""
+            PoliceMsg = "Medium Occurence: Occurences will start to drop."
             CivMsg = ""
             
         elif(input[6]>=4 and input[6]<7): #Early Morning
             daylight = "Early Morning"
             
             #---|Custom Rule Message|---
-            PoliceMsg = ""
+            PoliceMsg = "Low Occurence: Occurces is currently low but will rise"
             CivMsg = ""
          
         elif(input[6]>=7 and input[6]<12): #Morning
             daylight = "Morning"
             
             #---|Custom Rule Message|---
-            PoliceMsg = ""
+            PoliceMsg = "Medium-High Occurence: Be on the lookout for many distress calls as occurence will rise"
             CivMsg = ""
          
         elif(input[6]>=12 and input[6]<17): #Afternoon
-            daylight = "Aafternoon"
+            daylight = "Afternoon"
             
             #---|Custom Rule Message|---
-            PoliceMsg = ""
+            PoliceMsg = "High Occurence: Be on standby for many distress calls"
             CivMsg = ""
          
         elif(input[6]>=17 and input[6]<21): #Evening
             daylight = "Evening"
             
             #---|Custom Rule Message|---
-            PoliceMsg = ""
+            PoliceMsg = "Medium Occurence: Occurences will start to drop"
             CivMsg = ""
          
         elif(input[6]>=21 and input[6]<23): #Night
             daylight = "Night"
             
             #---|Custom Rule Message|---
-            PoliceMsg = ""
+            PoliceMsg = "Low Occurence: Occurences will start to drop"
             CivMsg = ""
                       
-    elif(prediction=="3"): # Assault
+    elif(prediction==3): # Assault
         crime = "Assault"
         
         if(input[6]>=0 and input[6]<4): #Midnight
             daylight = "Midnight"
             
             #---|Custom Rule Message|---
-            PoliceMsg = ""
+            PoliceMsg = "High Occurence! Be more vigilant on possible distress calls"
             CivMsg = ""
             
         elif(input[6]>=4 and input[6]<7): #Early Morning
             daylight = "Early Morning"
             
             #---|Custom Rule Message|---
-            PoliceMsg = ""
+            PoliceMsg = "Low Occurence. Stay on stadby"
             CivMsg = ""
          
         elif(input[6]>=7 and input[6]<12): #Morning
             daylight = "Morning"
             
             #---|Custom Rule Message|---
-            PoliceMsg = ""
+            PoliceMsg = "Medium Occurence. Warning! Assault occurence will be at a high"
             CivMsg = ""
          
         elif(input[6]>=12 and input[6]<17): #Afternoon
-            daylight = "Aafternoon"
+            daylight = "Afternoon"
             
             #---|Custom Rule Message|---
-            PoliceMsg = ""
+            PoliceMsg = "High Occurence! Be on the lookout for potential assault cases and distress calls!"
             CivMsg = ""
          
         elif(input[6]>=17 and input[6]<21): #Evening
             daylight = "Evening"
             
             #---|Custom Rule Message|---
-            PoliceMsg = ""
+            PoliceMsg = "High Occurence! Be on the lookout for potential assault cases and distress calls!"
             CivMsg = ""
-         
+
         elif(input[6]>=21 and input[6]<23): #Night
             daylight = "Night"
             
             #---|Custom Rule Message|---
-            PoliceMsg = ""
+            PoliceMsg = "High Occurence! Be on the lookout for potential assault cases and distress calls!"
             CivMsg = ""
                       
-    elif(prediction=="4"): # Drug/NArcotic
+    elif(prediction==4): # Drug/Narcotic
         crime = "Drug/Narcotic"
         
         if(input[6]>=0 and input[6]<4): #Midnight
             daylight = "Midnight"
             
             #---|Custom Rule Message|---
-            PoliceMsg = ""
+            PoliceMsg = "Medium Occurence: Patrol and keep the lookout for drug/narcotic trades"
             CivMsg = ""
             
         elif(input[6]>=4 and input[6]<7): #Early Morning
             daylight = "Early Morning"
             
             #---|Custom Rule Message|---
-            PoliceMsg = ""
+            PoliceMsg = "Low Occurence: Eat a donut"
             CivMsg = ""
          
         elif(input[6]>=7 and input[6]<12): #Morning
             daylight = "Morning"
             
             #---|Custom Rule Message|---
-            PoliceMsg = ""
+            PoliceMsg = "Medium Occurence: Drug/Narcotic occurences will rise. Stay vigilant"
             CivMsg = ""
          
         elif(input[6]>=12 and input[6]<17): #Afternoon
-            daylight = "Aafternoon"
+            daylight = "Afternoon"
             
             #---|Custom Rule Message|---
-            PoliceMsg = ""
+            PoliceMsg = "High Occurence: Active drug/narcotic activity will take place! Patrol and stay vigilant."
             CivMsg = ""
          
         elif(input[6]>=17 and input[6]<21): #Evening
             daylight = "Evening"
             
             #---|Custom Rule Message|---
-            PoliceMsg = ""
+            PoliceMsg = "Medium Occurence: drug/narcotic occurence will start to drop"
             CivMsg = ""
          
         elif(input[6]>=21 and input[6]<23): #Night
             daylight = "Night"
             
             #---|Custom Rule Message|---
-            PoliceMsg = ""
+            PoliceMsg = "Medium Occurence: drug/narcotic occurence will drop further to low occurence."
             CivMsg = ""
             
-              
-    infoMsg = "Crime Category: " + crime + "\n Time of day: " + input[6] + "\nPolice District: " + input[1]
+    crimeMsg = "Crime Category: " + str(crime)          
+    dayMsg = "Time of day: " + str(input[6]) + " (" + str(daylight) + ")"
+    pdMsg = "Police District: " + str(input[1])
     ContactMsg = "Contact " + input[1] + " if anything were to happen"
-    return crime
+    
+    feedback = [crimeMsg, dayMsg, pdMsg, PoliceMsg, CivMsg, ContactMsg]
+    
+    return feedback
 
 
 if predict_btn:
@@ -364,7 +371,14 @@ if predict_btn:
     
     prediction = model.predict(ModelInput)
     with modal.container():
-        st.write("Possible crime: " + str(prediction[0]) + " will occur")
+        # st.write("Possible crime: " + str(prediction[0]) + " will occur")
+        fb = feedback(prediction[0], Input)
+        st.write(fb[0])
+        st.write(fb[1])
+        st.write(fb[2])
+        st.write("Police : " + fb[3])
+        st.write("Civilian : " + fb[4])
+        st.write(fb[5])
 
 if pdD_btn:
     with modal.container():
