@@ -6,6 +6,7 @@ import geopandas as gpd
 import pandas as pd
 import geopy
 import pickle
+import pickle
 
 from geopy.geocoders import Nominatim
 from geopy.extra.rate_limiter import RateLimiter
@@ -32,8 +33,17 @@ predict_btn = st.sidebar.button("Predict", type='primary')
 geolocator = Nominatim(user_agent="GTA Lookup")
 geocode = RateLimiter(geolocator.geocode, min_delay_seconds=1)
 location = geolocator.geocode(addressRow1+ ", San Francisco, California")
+location = geolocator.geocode(addressRow1+ ", San Francisco, California")
 lat = location.latitude
 lon = location.longitude
+
+#Seperate the dates
+month = date.month
+dayOfMonth = date.day
+
+#Seperate Time
+hour = time.hour
+min = time.minute
 
 #Seperate the dates
 month = date.month
