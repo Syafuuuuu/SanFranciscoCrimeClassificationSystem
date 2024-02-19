@@ -1,6 +1,4 @@
 import pandas as pd
-#from shapely.geometry import  Point
-#import geopandas as gpd
 import matplotlib.pyplot as plt
 import plotly.express as px
 import numpy as np
@@ -13,15 +11,6 @@ import shutil
 import zipfile
 import os
 import re
-#import contextily as ctx
-#import geoplot as gplt
-#import lightgbm as lgb
-#import eli5
-# from eli5.sklearn import PermutationImportance
-# from lightgbm import LGBMClassifier
-# from matplotlib import pyplot as plt
-# from pdpbox import pdp, get_dataset, info_plots
-# import shap
 from sklearn.model_selection import train_test_split, KFold, GridSearchCV
 from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
@@ -33,7 +22,7 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.naive_bayes import BernoulliNB, MultinomialNB
 from sklearn.svm import SVC, SVR
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import classification_report, precision_score, recall_score
+from sklearn.metrics import classification_report, confusion_matrix, precision_score, recall_score
 import lightgbm as lgb
 from xgboost import XGBClassifier
 
@@ -42,12 +31,17 @@ import pickle
 train = pd.read_csv(r'C:\Users\User\Desktop\SEM 5\Pattern Rec\Project\train.csv')
 test = pd.read_csv(r'C:\Users\User\Desktop\SEM 5\Pattern Rec\Project\test.csv')
 
+#region------------ Check for basic Data ---------
 # print('First date: ', str(train.Dates.describe()['first']))
 # print('Last date: ', str(train.Dates.describe()['last']))
 # print('Test data shape ', train.shape)
 
 # print("Train Head:")
 # print(train.head(10))
+print("")
+print("Misisng Values")
+print(train.isna())
+print(train.count().isna())
 
 print("Category:")
 print(train['Category'].nunique())
@@ -62,16 +56,20 @@ print(train['PdDistrict'].unique())
 # Create scatter map
 # fig = px.scatter_geo(train, lat='Y', lon='X', title='Crime Incidents in San Fransisco', projection="natural earth")
 # fig.show()
+#endregion
 
-#----------Remove duplicates-----------
+#region----------Remove duplicates-----------
 print("Duplicate count before:")
 print(train.count().duplicated())
 print(train.count())
+print(train.shape[0])
 train.drop_duplicates(inplace=True)
 
 print("Duplicate count after:")
 print(train.count().duplicated())
 print(train.count())
+print(train.shape[0])
+#endregion
 
 #region---------- Remove Incorrect Coordinates ------------
 train.drop_duplicates(inplace=True)
@@ -119,7 +117,7 @@ plt.xlabel('Weekday')
 plt.ylabel('Incidents (%)')
 
 # plt.show()
-#endregion
+# endregion
 
 #region-------| Look at what crime is most frequent |----------
 data = train.groupby('Category').count().iloc[:, 0].sort_values(
@@ -233,10 +231,7 @@ for category in categories:
 
 #endregion
 
-
-
-print(train)
-#-------| Encoding our data |---------
+#region-------| Encoding our data |---------
 
 print("--------------------------------------------")
 print("-------------- After Encoding --------------")
@@ -283,7 +278,9 @@ print("----------CATEGORY ORDER-----------")
 train["PdDistrict"] = train["PdDistrict"].replace(district_dict)
 test["PdDistrict"] = test["PdDistrict"].replace(district_dict)
 
+#endregion
 
+#region-------| Correlation & Skew |----------
 train_corr = train[['Category','DayOfWeek','PdDistrict','X','Y', 'Month', 'Hour', 'Minute']]
 print(train_corr.corr())
 sns.heatmap(train_corr.corr(), annot=True)
@@ -292,11 +289,11 @@ sns.heatmap(train_corr.corr(), annot=True)
 skew = train_corr.skew()
 print(skew)
 
-# data_corr_map = sns.heatmap(train_clean_corr.corr(), annot=True)
+data_corr_map = sns.heatmap(train_corr.corr(), annot=True)
 # plt.show()
+#endregion
 
-
-#-------------| Drop unwated features |-------------
+#region-------------| Drop unwated features |-------------
 train = train.drop(['Dates','Descript','Resolution','Address'], axis=1)
 test = test.drop(['Id','Dates','Address'], axis=1)
 
@@ -307,7 +304,9 @@ target = 'Category'
 x = train.drop([target], axis=1)
 y = pd.DataFrame()
 y.loc[:,target] = train.loc[:,target]
+#endregion
 
+#region ---------|SMOTE|---------
 # Import SMOTE
 from imblearn.over_sampling import SMOTE
 
@@ -317,13 +316,32 @@ smote = SMOTE(random_state=42)
 # Apply SMOTE to x and y
 x_smote, y_smote = smote.fit_resample(x, y)
 
-print("Smoted---------Smoted")
-print(x_smote.head())
+# print("Smoted---------Smoted")
+# print(x_smote.head())
 
+# smote_balanced = x_smote
+# smote_balanced['Category'] = y_smote
+# print(smote_balanced.head())
+# print(smote_balanced.count())
+#endregion
+
+#region ------ Smote Visualisation ----
+# data = smote_balanced.groupby('Category').count().iloc[:, 0].sort_values(
+#     ascending=False)
+# data = data.reindex()
+
+# plt.figure(figsize=(10, 10))
+# with sns.axes_style("whitegrid"):
+#     ax = sns.barplot(
+#         x=(data.values / data.values.sum()) * 100,
+#         y=data.index,
+#         orient='h',
+#         palette="Reds_r")
+
+# plt.title('Incidents per Crime Category', fontdict={'fontsize': 16})
+# plt.xlabel('Incidents (%)')
 # plt.show()
-
-# x.to_csv("Train_Features.csv")
-# y.to_csv("Train_Target.csv")
+#endregion
 
 
 def final_model_training(x, y):
@@ -419,52 +437,57 @@ def modelTraining(x,y):
     BNB = BernoulliNB()
     MNB = MultinomialNB()
     SuppVec = SVC(verbose=1)
-    DT = DecisionTreeClassifier(criterion='entropy', max_depth=None, max_features='sqrt', min_samples_leaf=1, min_samples_split=2, splitter='random')
-    RF = RandomForestClassifier(n_estimators=200, max_depth=None, min_samples_split=2, min_samples_leaf=1, max_features='sqrt', random_state=7, verbose=1)
+    # DT = DecisionTreeClassifier(criterion='entropy', max_depth=None, max_features='sqrt', min_samples_leaf=1, min_samples_split=2, splitter='random')
+    # RF = RandomForestClassifier(n_estimators=200, max_depth=None, min_samples_split=2, min_samples_leaf=1, max_features='sqrt', random_state=7, verbose=1)
+    DT = DecisionTreeClassifier()
+    RF = RandomForestClassifier()
     clf = lgb.LGBMClassifier()
-    kf = KFold(n_splits=5, random_state=42, shuffle=True)
+    kf = KFold(n_splits=10, random_state=42, shuffle=True)
     xgb = XGBClassifier()
     
-    scores = [] 
-    train_scores = []
-    bestModel = None
-    bestScore = 0
-    bestTrainScore = 0
+    models = [RF, DT]
     
-    for train_index, test_index in kf.split(x):
+    for model in models:
+        print("----------------------------START NEW MODEL---------------------------------")
+        scores = [] 
+        train_scores = []
+        bestModel = None
+        bestScore = 0
+        bestTrainScore = 0
         
-        model = RF
+        for train_index, test_index in kf.split(x):
+            
+            # print("Train Index: ", train_index, "\n")
+            # print("Test Index: ", test_index)
         
-        # print("Train Index: ", train_index, "\n")
-        # print("Test Index: ", test_index)
-    
-        X_train, X_test, y_train, y_test = x.iloc[train_index], x.iloc[test_index], y.iloc[train_index], y.iloc[test_index]
+            X_train, X_test, y_train, y_test = x.iloc[train_index], x.iloc[test_index], y.iloc[train_index], y.iloc[test_index]
+            
+            y_train = y_train.values.ravel()
+            y_test = y_test.values.ravel()
+            
+            model.fit(X_train, y_train)
+            
+            y_pred = model.predict(X_test)
+            
+            training = model.score(X_train, y_train)
+            testing = model.score(X_test, y_test)
+            
+            train_scores.append(training)
+            scores.append(testing)
+            print(classification_report(y_test, y_pred))
+            
+            if(testing>bestScore):
+                bestScore = testing
+                bestTrainScore = training
+                bestModel = model
+                print("New Best Model!")
         
-        y_train = y_train.values.ravel()
-        y_test = y_test.values.ravel()
-        
-        model.fit(X_train, y_train)
-        
-        y_pred = model.predict(X_test)
-        
-        training = model.score(X_train, y_train)
-        testing = model.score(X_test, y_test)
-        
-        train_scores.append(training)
-        scores.append(testing)
-        print(classification_report(y_test, y_pred))
-        
-        if(testing>bestScore):
-            bestScore = testing
-            bestTrainScore = training
-            bestModel = model
-            print("New Best Model!")
-    
-    print("Best Training Score: ", bestTrainScore)
-    print("Best Testing Score: ", bestScore)
-    print("Saving the model!")
-    filename = 'finalized_model.sav'
-    pickle.dump(bestModel, open(filename, 'wb'))
+        print("Best Training Score: ", bestTrainScore)
+        print("Best Testing Score: ", bestScore)
+        print("Saving the model!")
+        print("----------------------------END MODEL---------------------------------")
+    # filename = 'finalized_model_MLP.sav'
+    # pickle.dump(bestModel, open(filename, 'wb'))
             
         
         
@@ -537,11 +560,64 @@ def overFit(x,y):
     # filename = 'finalized_model.sav'
     # pickle.dump(bestModel, open(filename, 'wb'))
 
+def hyperParam(x,y):
+    
+    # Initialize a StandardScaler
+    scaler = MinMaxScaler()
+    
+    #Scaling X
+    print("Before scaled", x)
+    x = scaler.fit_transform(x)
+    x = pd.DataFrame(x, columns=['DayOfWeek', 'pdDistrict', 'X', 'Y', 'Month', 'Day', 'Hour', 'Minute'])
+    print("After scaled", x)
+    
+    # Parameter grid for RandomForestClassifier
+    RFC_grid = {
+        'n_estimators': [50, 100, 200],
+        'max_depth': [None, 10, 20],
+        'min_samples_split': [2, 5, 10],
+        'min_samples_leaf': [1, 2, 4],
+        'max_features': ['log2']
+    }
 
+    # Parameter grid for DecisionTreeClassifier
+    # DTC_grid = {
+    #     'criterion': ['gini', 'entropy'],
+    #     'splitter': ['best', 'random'],
+    #     'max_depth': [None, 10, 20],
+    #     'min_samples_split': [2, 5, 10],
+    #     'min_samples_leaf': [1, 2, 4],
+    #     'max_features': ['auto', 'sqrt', 'log2']
+    # }
+    
+    KNN_grid = {
+        
+    }
 
-# Call the model_training function
+    RFC_grid_model = GridSearchCV(RandomForestClassifier(), RFC_grid, refit=True, verbose=3)
+    # DTC_grid_model = GridSearchCV(DecisionTreeClassifier(), DTC_grid, refit=True, verbose=3)
+
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=4)
+    
+    RFC_grid_model.fit(x_train, y_train.values.ravel())
+    # DTC_grid_model.fit(x, y)
+
+    # Get the best parameters 
+    RFC_best_params = RFC_grid_model.best_params_ 
+    # DTC_best_params = DTC_grid_model.best_params_ 
+    print("\n----- Best Hyperparameters -----")
+    print("RFC Best Params: ", RFC_best_params)
+    predicted = RFC_grid_model.predict(x_test)
+    confMat = confusion_matrix(y_test.values.ravel(), predicted.values.ravel())
+    print("RF Confusion Matrix")
+    print(confMat)
+    # print("DTC Best Params: ", DTC_best_params)
+
+#region -----------Call the model_training function----------------
 print("Training started")
 # final_model_training(x_smote, y_smote)
-# modelTraining(x_smote, y_smote)
+modelTraining(x_smote, y_smote)
 # overFit(x_smote, y_smote)
+# hyperParam(x_smote,y_smote)
 print("Training endeded")
+#endregion
