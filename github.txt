@@ -1,1 +1,10 @@
 Github Link: https://github.com/Syafuuuuu/SanFranciscoCrimeClassificationSystem
+
+Dataset: https://www.kaggle.com/competitions/sf-crime
+
+Docs:
+  Old:
+  https://docs.google.com/document/d/1cWc0oelnIEug1-hMDqkzjTUkDco6k8yxHGohUZDBNXc/edit?usp=sharing
+
+  New:
+  https://docs.google.com/document/d/1GzCsu0mXPrZXEQMgrHRmA5DCzCz1Biz7Gklth45EZp8/edit?usp=sharing
